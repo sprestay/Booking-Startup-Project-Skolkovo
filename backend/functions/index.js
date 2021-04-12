@@ -1,5 +1,5 @@
 const functions = require("firebase-functions");
-const { PassThrough } = require('stream');
+const { PassThrough, Readable } = require('stream'); // readable для создания потока = записи в firebase storage
 var QRCode = require('qrcode');
 const admin = require('firebase-admin');
 var express = require('express');
@@ -60,6 +60,7 @@ app.post('/getBookId', async (req, res) => {
     }
 });
 
+
 // Простая тестовая функция. Нету записи в бд - поэтому тут проверяем чисто работу Cors
 app.post('/testFunc', async (req, res) => {
     try {        
@@ -75,8 +76,25 @@ app.post('/testFunc', async (req, res) => {
     
         let buffers = [];
         qrStream.on('data', (chunk) => { buffers.push(chunk) });
-        qrStream.once('end', () => {
+        qrStream.once('end', async () => {
             let buffer = Buffer.concat(buffers);
+            try {
+                var read = new Readable();
+                read.push(buffer);
+                read.push(null);
+                const myBucket = admin.storage().bucket('gs://booksharing-2247b.appspot.com');
+                const file = myBucket.file(Math.random().toString() + ".png");
+            
+                read.pipe(file.createWriteStream()).on('error', function (err) {
+                    console.log("Again error");
+                }).on('finish', () => { 
+                    console.log('finishing, at last');
+                    file.makePublic();
+                    console.log("URL", file.publicUrl());
+                });
+            } catch (err) {
+                console.log("ERROR in streams& Fuck firebase");
+            }
             res.write(buffer, 'binary');
             res.end(null, 'binary');
         })
@@ -124,8 +142,24 @@ app.post('/updateBook', async (req, res) => {
     var objectConstructor = ({}).constructor;
     if (req.method == "POST" && req.body.constructor === objectConstructor) {
       try {
-        const result = await admin.firestore().collection('books').doc(req.body.bookID).update(req.body.fields);
-        res.json({result: 'success'});
+            let fields = req.body.fields;
+            
+            if (!fields['image']) res.json({result: "error"});
+
+            let m = fields['image'].match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+            let buffer = Buffer.from(m[2],'base64');
+            var read = new Readable();
+            read.push(buffer);
+            read.push(null);
+            const bucket = admin.storage().bucket('gs://booksimages');
+            const file = bucket.file(req.body.bookID.toString() + ".png");
+            read.pipe(file.createWriteStream())
+                .on('finish', async () => { 
+                    file.makePublic();
+                    fields['image'] = file.publicUrl();
+                    const result = await admin.firestore().collection('books').doc(req.body.bookID).update(fields);
+                    res.json({result: 'success'});
+            });
       } catch (err) {
         console.log(err)
         res.json({result: "error"});

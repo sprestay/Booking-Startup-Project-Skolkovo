@@ -4,7 +4,7 @@ import DeniedComponent from './DeniedComponent';
 import QR from './QRComponent';
 
 
-const QRScanner = () => {
+const QRScanner = (props) => {
     const [permission, setPermisson] = useState('prompt');
     const [permissionWasUpdated, setPermissonWasUpdated] = useState(false);
 
@@ -20,7 +20,7 @@ const QRScanner = () => {
 
     switch(permission) {
         case 'granted':
-            return <QR />
+            return <QR {...props}/>
         case 'prompt':
             return <PermissionRequest permissonWasUpdated={setPermissonWasUpdated}/>
         case 'denied':

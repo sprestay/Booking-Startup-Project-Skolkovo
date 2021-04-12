@@ -1,11 +1,21 @@
 import React, { useState } from 'react';
 import QrReader from 'react-qr-reader';
-import { Redirect } from 'react-router-dom';
+import { Redirect, useHistory } from 'react-router-dom';
 import { BACKEND_API } from '../config/config';
+import AlertMessage from './AlertMessage';
 const fetch = require('node-fetch');
 
-const QR = () => {
+const QR = (props) => {
+    const [showSuccesMessage, setShowSuccessMessage] = useState(props && props.location && props.location.state && props.location.state.after_create); // Если перешли из страницы создания книги
     const [book, setBook] = useState('');
+    var history = useHistory();
+
+    if (showSuccesMessage) {
+        setTimeout(() => { 
+            setShowSuccessMessage(false);
+            history.replace('', null);
+        }, 3000);
+    }
 
     const handleScan = (data) => {
         if (data != null) {
@@ -14,7 +24,6 @@ const QR = () => {
                 body: JSON.stringify({bookID: data}),
                 headers: {
                     "Content-Type": "application/json",
-                    // "Access-Control-Allow-Origin": "*" ,
                 }
             })
             .then((response) => response.json())
@@ -51,9 +60,11 @@ const QR = () => {
     } else {
         return (
             <div>
+                {showSuccesMessage ?  <div className={"success_message_block_on_scanner_component-overlay"}><AlertMessage type={"success"} message={"КНИГА УСПЕШНО СОХРАНЕНА"}/></div> : ''}
+
                 <h3>Отсканируй QR, расположенный на последней странице книги</h3>
                 <QrReader delay={100} onError={handleError} onScan={handleScan} style={{ width: '100%' }} />
-                <button onClick={testRequest}>Запрос</button>
+                {/* <button onClick={testRequest}>Запрос</button> */}
             </div>
         )
     }

@@ -3,11 +3,11 @@ import Header from './Header';
 import QRScanner from './QRScanner';
 
 
-const Main = () => {
+const Main = (props) => {
     return (
         <div>
             <Header />
-            <QRScanner />
+            <QRScanner {...props}/>
         </div>
     )
 }

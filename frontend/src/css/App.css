@@ -1,0 +1,124 @@
+/* Раздел заведения книг */
+
+.input_field {
+  background-color: #FFD90F;
+  border-radius: 5;
+  border: none;
+  width: 80%;
+  margin: 0% 10%;
+}
+* {
+  font-family: "Montserrat";
+}
+
+.create_book_form {
+  text-align: center;
+}
+
+.create_form_labels {
+  margin-bottom: 0px;
+  font-weight: bold;
+}
+
+.page_heading_text {
+  font-family: "Montserrat Bold";
+  text-align: center;
+  margin-top: 10px;
+}
+
+.page_heading_subheader {
+  font-size: 12px;
+  text-align: center;
+  margin-top: -5px;
+  font-weight: 500;
+}
+
+.button_container {
+  width: 35%;
+  background-color: rgb(53, 58, 63);
+  min-width: 120px;
+  height: 50px;
+  display: inline-flex;
+  border: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.uploaded_image {
+  width: 80%;
+  max-width: 300px;
+}
+
+.submit_create_page_button {
+  background-color: rgb(53, 58, 63);
+  border: none;
+  display: inline-flex;
+  width: 80%;
+  align-items: baseline;
+  justify-content: center;
+  height: 45px;
+  margin-bottom: 50px;
+}
+
+.message_box_on_create_page {
+  width: 85%;
+  background-color: rgb(53, 58, 63);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: start;
+  margin: 0 auto;
+  min-height: 60px;
+  align-self: center;
+  padding: 0 10px;
+  border-radius: 5px;
+}
+
+.external_message_box_on_create_page {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.success_message_block_on_scanner_component-overlay {
+  position: fixed;
+  overflow: auto;
+  left: 0;
+  top: 30%;
+  width: 100%;
+  height: 100%;
+}
+
+.qr_generator_container {
+  text-align: center;
+  margin-top: 10%;
+}
+
+.qr_spinner_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.qr_download_button_container {
+  display: flex;
+  flex-direction: column;
+  margin-left: 20px;
+  align-items: center;
+  border: 1px solid black;
+  border-radius: 5px;
+  padding: 5px;
+}
+
+@font-face {
+  font-family: "Montserrat";
+  src: url('./Montserrat/Montserrat-ExtraLight.ttf');
+  font-style: normal;
+  font-weight: normal;
+}
+
+@font-face {
+  font-family: "Montserrat Bold";
+  src: url("./Montserrat//Montserrat-SemiBold.ttf");
+  font-style: normal;
+  font-weight: normal;
+}

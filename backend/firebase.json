@@ -8,5 +8,8 @@
       "host": "localhost",
       "port": "2244"
     }
+  },
+  "storage": {
+    "rules": "storage.rules"
   }
 }

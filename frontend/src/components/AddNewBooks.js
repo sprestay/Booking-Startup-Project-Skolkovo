@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import Header from './Header';
-import { Form, Button, Row, Alert } from 'react-bootstrap';
+import { Form, Button, Row, Alert, Container } from 'react-bootstrap';
 import { Redirect } from 'react-router-dom'
 import Camera, { FACING_MODES, IMAGE_TYPES } from 'react-html5-camera-photo';
 import 'react-html5-camera-photo/build/css/index.css';
 import { useHistory } from "react-router-dom";
 import { BACKEND_API } from '../config/config';
+import cat_photo from '../images/on_create_book.png';
+import { HiCamera, HiFolderDownload, HiOutlineBookOpen } from 'react-icons/hi';
+import AlertMessage from './AlertMessage';
 const fetch = require('node-fetch');
 
 
@@ -15,6 +18,7 @@ const AddNewBook = (props) => {
     const [description, setDescription] = useState('');
     const [photo, setPhoto] = useState('');
     const [errorLabel, setErrorLabel] = useState(false);
+    const [warningLabel, setWarningLabel] = useState(false);
     const [inCameraMode, setCameraMode] = useState(false);
 
     // Для редиректа
@@ -47,39 +51,33 @@ const AddNewBook = (props) => {
         setPhoto(image);
     }
 
-    // Функция для отрисовки карточки изображения на клиенте
-    const renderImage = (item, index) => {
-        return (<div style={{flexDirection: 'row'}}>
-                    <img src={item} style={{width: '100px'}} />
-                </div>)
-    }
-
     const submitFunc = async () => {
         if (title && author && photo) {
+            setWarningLabel(false);
             const result = await fetch(BACKEND_API + 'updateBook', {
                 method: "POST", 
                 body: JSON.stringify({bookID: book.bookID, fields: {"image": photo, "title": title, "author": author, "decription": description, "available": true}}),
                 headers: {
                     "Content-Type": "application/json",
                 }
-            }).then((res) => res.json()).catch((err) => console.log(err));
+            }).then((res) => res.json()).catch((err) => {
+                console.log(err);
+                setErrorLabel(true);
+                document.getElementById("alert_message_id").scrollIntoView(true); // скролл к ошибке
+            });
             
-            console.log(result);
             if (result && result.result == 'success') {
-                document.getElementById('success_message').style.display = 'block';
-                setTimeout(() => history.replace('/'), 3000);
+                history.replace({
+                    pathname: '/', 
+                    state: {after_create: true}
+                }); // СЮДА передать сообщение об успехе
             } else {
-                document.getElementById('fetch_error').style.display = 'block';
-                setTimeout(() => {
-                    document.getElementById('fetch_error').style.display = 'none';
-                }, 5000)
+                setErrorLabel(true);
+                document.getElementById("alert_message_id").scrollIntoView(true); // скролл к ошибке
             }
-
-            // history.replace('/'); // вернуться домой
-
         } else {
-            setErrorLabel(true);
-            setTimeout(() => setErrorLabel(false), 3000)
+            setWarningLabel(true);
+            document.getElementById("alert_message_id").scrollIntoView(true); // скролл к ошибке
         }
     }
 
@@ -92,7 +90,13 @@ const AddNewBook = (props) => {
     return (
         <div>
             <Header />
-            <h1>{inCameraMode ? "Сделайте снимок обложки" : "Нужно добавить книгу"}</h1>
+            <div style={{display: 'flex', justifyContent: 'center', marginTop: "20px"}}>
+                <img src={cat_photo} style={{width: '50%'}}/>
+            </div>
+
+            <h4 className={"page_heading_text"}>{inCameraMode ? "Сделайте снимок обложки" : "ДОБАВЛЕНИЕ КНИГИ"}</h4>
+            <p className={"page_heading_subheader"}>ПОЖАЛУЙСТА ЗАПОЛНИТЕ ОБЯЗАТЕЛЬНЫЕ ПОЛЯ*</p>
+
             <div style={{display: inCameraMode ? 'block' : 'none'}}>
                 <Camera
                     idealFacingMode = {FACING_MODES.ENVIRONMENT}
@@ -102,58 +106,58 @@ const AddNewBook = (props) => {
                     onTakePhoto = {(d) => getShoot(d)}
                 />
             </div>
-
-            <div id='success_message' style={{display: 'none', backgroundColor: 'green'}}> {/* modal window with success message */}
-                <h4>Книга успешно сохранена</h4>
-                <p>Ты будешь перенаправлен на главную страницу</p>
-            </div>
-            <div id='fetch_error' style={{display: 'none', backgroundColor: 'red'}}> {/* modal window with success message */}
-                <h4>Произошла ошибка</h4>
-                <p>Попробуйте позже</p>
-            </div>
+            
+            {/* Блок алертов. Срабатывают в зависимости от ситуации */}
+            {errorLabel ? <AlertMessage type={"error"} message={"НЕПРЕДВИДЕННАЯ ОШИБКА. ПОПРОБУЙТЕ ПОЗЖЕ"} /> : ( warningLabel ?  <AlertMessage type={"warning"} message={"НЕОБХОДИМО УКАЗАТЬ НАЗВАНИЕ И АВТОРА КНИГИ, ПРИЛОЖИТЬ ИЗОБРАЖЕНИЕ"}/>  : '')}
 
             <div>
-            <Form style={{display: inCameraMode ? 'none' : 'block'}}>
+            <Form style={{display: inCameraMode ? 'none' : 'block'}} className={"create_book_form"}>
                 <Form.Group>
-                    <Form.Label>Название</Form.Label>
-                    <Form.Control type="text" placeholder="Введите название книги" value={title} onChange={e => setTitle(e.target.value)}/>
+                    <Form.Label className={"create_form_labels"}>НАЗВАНИЕ КНИГИ*</Form.Label>
+                    <Form.Control className={"input_field"} type="text" value={title} onChange={e => setTitle(e.target.value)}/>
                 </Form.Group>
 
                 <Form.Group>
-                    <Form.Label>Автор</Form.Label>
-                    <Form.Control type="text" placeholder="Введите автора книги" value={author} onChange={e => setAuthor(e.target.value)}/>
+                    <Form.Label className={"create_form_labels"}>АВТОР КНИГИ*</Form.Label>
+                    <Form.Control className={"input_field"} type="text" value={author} onChange={e => setAuthor(e.target.value)}/>
                 </Form.Group>
 
-                <Form.Group>
-                    <Form.Label>Добавьте описание книги (необязательно)</Form.Label>
-                    <Form.Control as="textarea" rows={3} onChange={e => setDescription(e.target.value)} value={description}/>
+                <Form.Group style={{marginTop: '50px'}}>
+                    <Form.Label className={"page_heading_subheader"} style={{fontSize: '10px'}}>ПРИ ЖЕЛАНИИ ВЫ МОЖЕТЕ НАПИСАТЬ СВЯЗАННУЮ С КНИГОЙ ИСТОРИЮ, ЕЁ УВИДЯТ ДРУГИЕ ПОЛЬЗОВАТЕЛИ</Form.Label>
+                    <Form.Control className={"input_field"} as="textarea" rows={5} onChange={e => setDescription(e.target.value)} value={description}/>
                 </Form.Group>
 
+                <p className={"create_form_labels"}>ДОБАВЬТЕ ФОТОГРАФИЮ КНИГИ</p>
+                {/* Form.file нивидим */}
                 <Form.Group style={{display: 'none'}}> 
                     <Form.File id='input-file' label="Загрузить фото" accept=".png, .jpeg" onChange={uploadImageFromDevice}/>
                 </Form.Group>
-                <Row style={{justifyContent: 'start', margin: '20px 5px 20px 5px'}}>
-                    <Button variant={'dark'} size={'sm'} onClick={() => setCameraMode(true)}>Сделать снимок</Button>
-                    <Button onClick={() => document.getElementById('input-file').click()}>Загрузить с устройства</Button>
-                    { photo ? <img src={photo}/> : ""}
-                </Row>
 
-                <Alert variant={'danger'} style={{display: errorLabel ? 'block' : 'none'}}>
-                    Название, автор и фото - обязательные поля. Фото - только формат jpg/png
-                </Alert>
+                <Container>
+                    {photo ? <img src={photo} className={"uploaded_image"} /> : ''}
+                    <Row style={{justifyContent: 'space-between', margin: '5px 35px'}}>
+                        <Button variant={"warning"} className={"button_container"} onClick={() => setCameraMode(true)}><HiCamera size={50} color={'rgb(255,255,255)'}/></Button>
+                        <Button variant={"warning"} className={"button_container"} onClick={() => document.getElementById('input-file').click()}><HiFolderDownload size={50} color={'rgb(255,255,255)'}/></Button>
+                    </Row>
+                </Container>
 
                 <div style={{textAlign: 'center', marginTop: '30px'}}>
-                    <Button variant="primary" onClick={submitFunc}>
-                        Сохранить
+                    <Button variant={"warning"} className={"submit_create_page_button"} onClick={submitFunc}>
+                        <div>
+                            <HiOutlineBookOpen size={30} color={'white'}/>
+                        </div>
+                        <div>
+                            <p style={{color: "white", fontWeight: 'bold', marginLeft: '20px'}}>СОХРАНИТЬ</p>
+                        </div>
                     </Button>
                 </div>
-                
             </Form>
             </div>
         </div>
     )
 
 // Проверка на слишком большой файл
+// Добавить сжатие файла на клиенте
 }
 
 export default AddNewBook;
