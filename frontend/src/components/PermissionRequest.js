@@ -15,9 +15,9 @@ const PermissionRequest = (props) => {
 
     return (
         <div style={{textAlign: 'center'}}>
-            <p>Во время использования приложения необходимо будет сканировать QR-коды.</p>
+            <p>Во время использования приложения необходимо сканировать QR-коды.</p>
             <p>Просим предоставить доступ к камере устройства</p>
-            <Button onClick={getPermissions}>Я согласен</Button>
+            <Button onClick={getPermissions} className={"book_interaction_button"}>Я согласен</Button>
         </div>
     );
 }

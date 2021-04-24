@@ -2,20 +2,21 @@ import React, { useState } from 'react';
 import QrReader from 'react-qr-reader';
 import { Redirect, useHistory } from 'react-router-dom';
 import { BACKEND_API } from '../config/config';
-import AlertMessage from './AlertMessage';
+// import AlertMessage from './AlertMessage';
+import Header from './Header';
 const fetch = require('node-fetch');
 
 const QR = (props) => {
-    const [showSuccesMessage, setShowSuccessMessage] = useState(props && props.location && props.location.state && props.location.state.after_create); // Если перешли из страницы создания книги
+    // const [showSuccesMessage, setShowSuccessMessage] = useState(props && props.location && props.location.state && props.location.state.after_create); // Если перешли из страницы создания книги
     const [book, setBook] = useState('');
     var history = useHistory();
 
-    if (showSuccesMessage) {
-        setTimeout(() => { 
-            setShowSuccessMessage(false);
-            history.replace('', null);
-        }, 3000);
-    }
+    // if (showSuccesMessage) {
+    //     setTimeout(() => { 
+    //         setShowSuccessMessage(false);
+    //         history.replace('', null);
+    //     }, 3000);
+    // }
 
     const handleScan = (data) => {
         if (data != null) {
@@ -60,11 +61,14 @@ const QR = (props) => {
     } else {
         return (
             <div>
-                {showSuccesMessage ?  <div className={"success_message_block_on_scanner_component-overlay"}><AlertMessage type={"success"} message={"КНИГА УСПЕШНО СОХРАНЕНА"}/></div> : ''}
-
-                <h3>Отсканируй QR, расположенный на последней странице книги</h3>
+                {/* {showSuccesMessage ?  <div className={"success_message_block_on_scanner_component-overlay"}><AlertMessage type={"success"} message={"КНИГА УСПЕШНО СОХРАНЕНА"}/></div> : ''} */}
+                <Header />
+                <h4 className={"page_heading_text"}>ОТСКАНИРУЙТЕ QR</h4>
+                <div style={{textAlign: 'center'}}>
+                    <p>QR РАСПОЛОЖЕН НА ПОСЛЕДНЕЙ СТРАНИЦЕ КНИГИ</p>
+                </div>
                 <QrReader delay={100} onError={handleError} onScan={handleScan} style={{ width: '100%' }} />
-                {/* <button onClick={testRequest}>Запрос</button> */}
+                <button onClick={testRequest}>Запрос</button>
             </div>
         )
     }

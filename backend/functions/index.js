@@ -125,15 +125,12 @@ app.get('/generateQrForNewBook', async (req, res) => {
             res.end(null, 'binary');
         });
         /// новое! - Удаление записи, если она не была заполнена в течении суток
-        setTimeout(async () => {
-            const thisBook = await admin.firestore().collection('books').doc(newBook.id).get();
-            if (! thisBook.data()['title']) {
-                admin.firestore().collection('books').doc(newBook.id).delete().then((res) => console.log('successfully deleted')).catch((err) => console.log("error - ", err));
-            }
-        }, 1000 * 60 * 60 * 24); 
+         // 5 часов, чтобы загрузить книгу 
+         // добавить ответ
         /// новое
     } catch(err){
         console.error('Failed to return content', err);
+        res.status(200).send({result: 'error'}); // новое
     }
 });
 
@@ -143,25 +140,26 @@ app.post('/updateBook', async (req, res) => {
     if (req.method == "POST" && req.body.constructor === objectConstructor) {
       try {
             let fields = req.body.fields;
-            
-            if (!fields['image']) res.json({result: "error"});
-
-            let m = fields['image'].match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-            let buffer = Buffer.from(m[2],'base64');
-            var read = new Readable();
-            read.push(buffer);
-            read.push(null);
-            const bucket = admin.storage().bucket('gs://booksimages');
-            const file = bucket.file(req.body.bookID.toString() + ".png");
-            read.pipe(file.createWriteStream())
-                .on('finish', async () => { 
-                    file.makePublic();
-                    fields['image'] = file.publicUrl();
-                    const result = await admin.firestore().collection('books').doc(req.body.bookID).update(fields);
-                    res.json({result: 'success'});
-            });
+            if (fields['image']) {
+                let m = fields['image'].match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+                let buffer = Buffer.from(m[2],'base64');
+                var read = new Readable();
+                read.push(buffer);
+                read.push(null);
+                const bucket = admin.storage().bucket('gs://booksimages');
+                const file = bucket.file(req.body.bookID.toString() + ".png");
+                read.pipe(file.createWriteStream())
+                    .on('finish', async () => { 
+                        file.makePublic();
+                        fields['image'] = file.publicUrl();
+                        const result = await admin.firestore().collection('books').doc(req.body.bookID).update(fields);
+                        res.json({result: 'success'});
+                });
+            } else {
+                const result = await admin.firestore().collection('books').doc(req.body.bookID).update(fields);
+                res.json({result: 'success'});
+            }
       } catch (err) {
-        console.log(err)
         res.json({result: "error"});
       }
 
@@ -173,14 +171,42 @@ app.post('/updateBook', async (req, res) => {
 // Тестовая функция. Генерирует запись без сканирования QR
 app.post('/mockScanner', async (req, res) => {
     let response = {};
-    if (Math.random() > 0.5) {
-        response = {"bookID": 123, "title": "Фауст", "author": "Гете", "Janre": "Классика"};
+    let foundBooks = [];
+    let s = {};
+    const books = await admin.firestore().collection('books').get()
+    .then((snap) => {
+        snap.forEach(item => {
+            s = item.data();
+            s['bookID'] = item.id;
+            foundBooks.push(s);
+        })
+    });
+    if (foundBooks.length) {
+        response = foundBooks[0];
     } else {
         const newBook = await admin.firestore().collection('books').add({});
         response = {"bookID": newBook.id};
     }
-
     return res.status(200).send(response);
+});
+
+// Получаем список книг, которые числятся за пользователем
+app.post('/getUsersBooks', async (req, res) => {
+    const id = req.body.userID; // id пользователя
+    if (id) {
+        let borrowedBooks = [];
+        let s = {};
+        const books = await admin.firestore().collection('books').where('taken', '==', id)
+        .get().then((snap) => {
+            snap.forEach(item => {
+                s = item.data();
+                s['bookID'] = item.id;
+                borrowedBooks.push(s);
+            });
+        }).catch(e => console.log("ERROR - ", e));
+        return res.status(200).send(borrowedBooks);
+    } else 
+        return res.status(200).send({result: 'error in userID'})
 });
 
 
@@ -193,4 +219,20 @@ app.get('/getAllBooks', async (req, res) => {
         });
     });
     res.json(foundBooks);
+});
+
+app.get("/clearEmptyBooks", async (req, res) => {
+    let ids = [];
+    const ref = admin.firestore().collection('books');
+    const books = await ref.get()
+    .then((snap) => {
+        snap.forEach(item => {
+            let s = item.data();
+            if (!s.title || !s.title.length) {
+                ids.push(item.id);
+                ref.doc(item.id).delete().then((res) => console.log('successfully deleted')).catch((err) => console.log('error in deleting'));
+            }
+        })
+    });
+    res.json(ids);
 });

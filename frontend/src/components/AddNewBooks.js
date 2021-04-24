@@ -56,7 +56,7 @@ const AddNewBook = (props) => {
             setWarningLabel(false);
             const result = await fetch(BACKEND_API + 'updateBook', {
                 method: "POST", 
-                body: JSON.stringify({bookID: book.bookID, fields: {"image": photo, "title": title, "author": author, "decription": description, "available": true}}),
+                body: JSON.stringify({bookID: book.bookID, fields: {"image": photo, "title": title, "author": author, "description": description, "taken": false}}),
                 headers: {
                     "Content-Type": "application/json",
                 }

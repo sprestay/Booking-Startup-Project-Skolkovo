@@ -14,9 +14,8 @@ const GenerateQR = () => {
     const fetchData = async () => {
         setLoader(true);
         try {
-          const response = await fetch(BACKEND_API + 'generateQrForNewBook', {method: "GET"});
-          const result = await response.arrayBuffer();
-          // непосредственное обновление состояния при условии, что компонент не размонтирован (Было условие if(!cleanupFunction))
+            const response = await fetch(BACKEND_API + 'generateQrForNewBook', {method: "GET"});
+            const result = await response.arrayBuffer();
             setQR("data:image/png;base64, " + Buffer(result).toString('base64'));
         } catch (e) {
           console.error(e.message)

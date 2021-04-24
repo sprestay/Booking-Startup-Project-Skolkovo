@@ -109,6 +109,102 @@
   padding: 5px;
 }
 
+.menu_button {
+  width: 95px;
+  height: 95px;
+  border-radius: 50%;
+  background-color: #FFD90F;
+  text-align: center;
+  font-size: 50px;
+}
+
+.main_menu {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  padding-left: 20px;
+  padding-right: 20px;
+  justify-items: center;
+  margin-top: 40px;
+}
+
+.external_menu_button {
+  width: 120px;
+  height: 120px;
+  background-color: rgb(53, 58, 63);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.menu_item {
+  text-align: center;
+}
+
+.menu_subtitle {
+  margin-top: 10px;
+}
+
+.book_image {
+  width: 80%;
+  border-radius: 20px;
+  margin-top: 20px;
+}
+
+.book_title {
+  font-family: "Montserrat Bold";
+  margin-top: 10px;
+
+}
+
+.book_owner_message {
+  font-weight: bold;
+  font-size: 20px;
+  margin-top: 5px;
+}
+.book_owner_message_text {
+  margin-top: -10px;
+  font-size: 13px;
+}
+
+.book_interaction_button {
+  background-color: #FFD90F;
+  border: none;
+  width: 80%;
+  color: rgb(53, 58, 63);
+  font-family: "Montserrat Bold";
+  height: 45px;
+  margin-bottom: 30px;
+  margin-top: 20px;
+}
+
+.borrowed_container {
+  width: 70px;
+  max-height: 100px;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  margin-left: 20px;
+}
+.borrowed_list {
+  overflow: scroll;
+  margin-top: 100px;
+  text-align: center;
+}
+
+.yellow_line {
+  background-color: #FFD90F;
+  width: 100%;
+  height: 50px;
+}
+
+.borrowed_scrollable {
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  overflow: scroll;
+}
+
 @font-face {
   font-family: "Montserrat";
   src: url('./Montserrat/Montserrat-ExtraLight.ttf');
